@@ -2,7 +2,9 @@ import { useState, useEffect } from "react";
 export default function Dashboard(e){
     var [output, setOutput] = useState({data: {},
         included: []});
-    var [names, setNames] = useState([])
+    var [names, setNames] = useState([]);
+    var [curSelect, setcurSelected] = useState("");
+    var [posts, setPostList] = useState([]);
     useEffect(() => {getFromAPI().then(() => {getAuthorNameList()})}, [])
     async function getFromAPI(){
         var header = new Headers();
@@ -30,19 +32,33 @@ export default function Dashboard(e){
             nameSet.add(element["attributes"]["author"]["fullName"])
         }
         });
-        for(let i = 0; i < nameSet.size; i++){
-            Names.append(nameSet[i]);
-        }
+        nameSet.keys().forEach((e) => {Names.push(e)});
         setNames(Names);
-        console.log(names);
     }
-
+    function getPosts(){
+        let postList = [];
+        output.included.forEach((e) => {if(e["attributes"]["author"] != null){
+            if (e["attributes"]["author"]["fullName"] === curSelect){
+                console.log(e["attributes"]["content"]["bodyHTML"]);
+                postList.push(e["attributes"]["content"]["subject"]);
+                postList.push(e["attributes"]["content"]["BodyHTML"]);
+            }
+        }})
+        setPostList(postList);
+    }
+    function onSelectionChange(e){
+        setcurSelected(e.target.value);
+        getPosts();
+        console.log(posts);
+    }
     return (
         <div>
-            <select id="stupid">
-                <option>Choose Somebody</option>
+            <select id="stupid" onChange={onSelectionChange}>
                 {names.map((d) => {return(<option>{d}</option>)})}
             </select>
+            <div>
+                {posts.map((d) => {return(<p>{d}</p>)})}
+            </div>
         </div>
     );
 }
